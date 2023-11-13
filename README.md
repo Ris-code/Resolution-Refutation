@@ -7,4 +7,4 @@ Open command prompt
 Open linux command line
 ## Clone the repository
 ```bash
-git clone https://github.com/Ris-code/Resolution-Refutaion.git
+git clone https://github.com/Ris-code/Resolution-Refutation.git
