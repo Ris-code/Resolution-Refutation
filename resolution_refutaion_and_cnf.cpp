@@ -245,7 +245,6 @@ public:
             }
 
             if (newClauses.empty()) {
-                // No new resolvents, no contradiction found
                 return false;
             }
 
@@ -253,13 +252,41 @@ public:
         }
     }
 
+    bool informed_greedy_search() {
+        // heuristic could be to prioritize resolving clauses that result in the smallest resolvents. This is based on the assumption that smaller resolvents are more likely to lead to a contradiction (an empty clause).
+    while (true) {
+        vector<string> newClauses;
+        for (int i = 0; i < KB.size(); ++i) {
+            for (int j = i + 1; j < KB.size(); ++j) {
+                string resolvent = resolve(KB[i], KB[j]);
+                if (resolvent.empty()) {
+                    return true;
+                } else if (!contains(newClauses, resolvent) && !contains(KB, resolvent)) {
+                    newClauses.push_back(resolvent);
+                }
+            }
+        }
+
+        if (newClauses.empty()) {
+            return false;
+        }
+
+        // Sort newClauses based on the length of the clauses
+        sort(newClauses.begin(), newClauses.end(), [](const string& a, const string& b) {
+            return a.size() < b.size();
+        });
+
+        KB.insert(KB.end(), newClauses.begin(), newClauses.end());
+    }
+}
+
 private:
     bool contains(const vector<string>& clauses, const string& clause) const {
         return find(clauses.begin(), clauses.end(), clause) != clauses.end();
     }
 
-    std::string resolve(const string& clause1, const string& clause2) const {
-        std::string result;
+    string resolve(const string& clause1, const string& clause2) const {
+        string result;
 
         for (char literal : clause1) {
             if (literal != '&' && literal != '|') {
@@ -326,6 +353,12 @@ bool uninformed_search(vector<string> KB){
     return resolver.uninformedSearch();
 }
 
+bool informed_greedy_search(vector<string> KB){
+    ResolutionRefutation resolver(KB);
+
+    return resolver.informed_greedy_search();
+}
+
 int main(){
 
     int n,m;
@@ -360,7 +393,18 @@ int main(){
         }
         cout<<KB_cnf[i]<<endl;
     }
+    cout<<endl;
     
+    cout<<"Result by uninformed search"<<endl;
+    cout<<"----------------------------"<<endl;
     if(uninformed_search(KB_cnf)) cout << "Contradiction found, the knowledge base is unsatisfiable." << endl;
     else cout << "No contradiction found, the knowledge base is satisfiable." << endl;
+    cout<<endl;
+
+    cout<<"Result by informed search"<<endl;
+    cout<<"--------------------------"<<endl;
+    if(informed_greedy_search(KB_cnf)) cout << "Contradiction found, the knowledge base is unsatisfiable." << endl;
+    else cout << "No contradiction found, the knowledge base is satisfiable." << endl;
+
+
 }
