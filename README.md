@@ -8,6 +8,7 @@ Open linux command line
 ## Clone the repository
 ```bash
 git clone https://github.com/Ris-code/Resolution-Refutation.git
+```
 
 # Resolution Refutation and CNF Conversion in C++
 
