@@ -31,24 +31,3 @@ This C++ program implements the resolution refutation method for propositional l
 1. Compile the program with a C++ compiler.
 2. Run the program. When prompted, enter the number of propositions and queries, followed by each proposition and query.
 3. The program will then print out the results of the uninformed and informed searches.
-
-## Example
-
-```cpp
-int main(){
-    int n,m;
-    cin>>n>>m;
-    
-    string proposition, query;
-    
-    vector<string> KB;
-
-    for(int i=0; i<n; i++){
-        cin>>proposition;
-        KB.push_back(proposition);
-    }
-    
-    cin >>query;
-
-    // ... rest of the code
-}
