@@ -236,6 +236,7 @@ public:
                     string resolvent = resolve(KB[i], KB[j]);
                     if (resolvent.empty()) {
                         // Empty resolvent means contradiction found, return true
+                        cout << "[Path: " << KB[i] << ", " << KB[j] << ']'<<endl;
                         return true;
                     } else if (!contains(newClauses, resolvent) && !contains(KB, resolvent)) {
                         // Add unique resolvent to newClauses
@@ -248,6 +249,14 @@ public:
                 return false;
             }
 
+            // Print the path
+            cout << '['<<"Path: ";
+            for (const string& clause : newClauses) {
+                cout << clause << ", ";
+            }
+            cout <<']'<< endl;
+
+
             KB.insert(KB.end(), newClauses.begin(), newClauses.end());
         }
     }
@@ -259,6 +268,7 @@ public:
         for (int i = 0; i < KB.size(); ++i) {
             for (int j = i + 1; j < KB.size(); ++j) {
                 string resolvent = resolve(KB[i], KB[j]);
+                cout << "[Path: " << KB[i] << ", " << KB[j] << ']'<<endl;
                 if (resolvent.empty()) {
                     return true;
                 } else if (!contains(newClauses, resolvent) && !contains(KB, resolvent)) {
@@ -270,6 +280,13 @@ public:
         if (newClauses.empty()) {
             return false;
         }
+        
+        // Print the path
+        cout << '['<<"Path: ";
+        for (const string& clause : newClauses) {
+            cout << clause << ", ";
+        }
+        cout <<']'<< endl;
 
         // Sort newClauses based on the length of the clauses
         sort(newClauses.begin(), newClauses.end(), [](const string& a, const string& b) {
@@ -287,20 +304,25 @@ private:
 
     string resolve(const string& clause1, const string& clause2) const {
         string result;
+        string clause2Copy = clause2;
 
         for (char literal : clause1) {
             if (literal != '&' && literal != '|') {
-                if (clause2.find(literal) == string::npos) {
+                size_t pos = clause2Copy.find(literal);
+                if (pos == string::npos) {
                     result += literal;
+                } else {
+                    // Remove the resolved literal from clause2 and break the loop
+                    clause2Copy.erase(pos, 1);
+                    break;
                 }
             }
         }
 
-        for (char literal : clause2) {
+        // Add the remaining literals from clause2 to the result
+        for (char literal : clause2Copy) {
             if (literal != '&' && literal != '|') {
-                if (clause1.find(literal) == string::npos) {
-                    result += literal;
-                }
+                result += literal;
             }
         }
 
@@ -377,16 +399,28 @@ int main(){
 
     vector<string> KB_cnf;
     vector<string> literals;
-    for(auto& e: KB){
-        string s = convert_to_cnf('('+e+')');
-        s=s.substr(1,s.length()-2);
-        // cout<<s<<endl;
-        KB_cnf = separateClauses(s, literals);
+
+    // Convert the KB to CNF
+
+    for (auto& e : KB) {
+        string s = convert_to_cnf('(' + e + ')');
+        s = s.substr(1, s.length() - 2);
+        // Separate CNF clauses and add to KB_cnf
+        separateClauses(s, literals);
+        for (const auto& clause : literals) {
+            KB_cnf.push_back(clause);
+        }
+        literals.clear();
     }
 
-    if(query[0]=='!') KB_cnf.push_back(query.substr(1, query.length()-1));
-    else KB_cnf.push_back('!'+query);
-
+    // Handle the negation of the query
+    if (query[0] == '!') {
+        KB_cnf.push_back(query.substr(1, query.length() - 1));
+    } else {
+        KB_cnf.push_back('!' + query);
+    }
+    
+    
     for(int i=0; i<KB_cnf.size(); i++){
         if(KB_cnf[i][0]=='('){
             KB_cnf[i]=KB_cnf[i].substr(1,KB_cnf[i].length()-2);
@@ -394,17 +428,24 @@ int main(){
         cout<<KB_cnf[i]<<endl;
     }
     cout<<endl;
-    
-    cout<<"Result by uninformed search"<<endl;
-    cout<<"----------------------------"<<endl;
-    if(uninformed_search(KB_cnf)) cout << "Contradiction found, the knowledge base is unsatisfiable." << endl;
-    else cout << "No contradiction found, the knowledge base is satisfiable." << endl;
-    cout<<endl;
 
-    cout<<"Result by informed search"<<endl;
-    cout<<"--------------------------"<<endl;
-    if(informed_greedy_search(KB_cnf)) cout << "Contradiction found, the knowledge base is unsatisfiable." << endl;
-    else cout << "No contradiction found, the knowledge base is satisfiable." << endl;
+    cout << "Result by uninformed search" << endl;
+    cout << "----------------------------" << endl;
+    if (uninformed_search(KB_cnf)) {
+        cout << "Contradiction found, the knowledge base is unsatisfiable." << endl;
+    } else {
+        cout << "No contradiction found, the knowledge base is satisfiable." << endl;
+    }
+    cout << endl;
 
+    cout << "Result by informed search" << endl;
+    cout << "--------------------------" << endl;
+    if (informed_greedy_search(KB_cnf)) {
+        cout << "Contradiction found, the knowledge base is unsatisfiable." << endl;
+    } else {
+        cout << "No contradiction found, the knowledge base is satisfiable." << endl;
+    }
+
+    return 0;
 
 }
