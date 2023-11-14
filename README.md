@@ -41,10 +41,10 @@ Q>T
 Q>(R=T)
 R 
 ```
-OR: |
-AND: &
-NOT: !
-IMPLICATION: >
-IFF (bidirectional): =
-OPENING BRACKET: (
-CLOSING BRACKET: )
+#### OR: |
+#### AND: &
+#### NOT: !
+#### IMPLICATION: >
+#### IFF (bidirectional): =
+#### OPENING BRACKET: (
+#### CLOSING BRACKET: )
