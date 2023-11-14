@@ -33,12 +33,14 @@ This C++ program implements the resolution refutation method for propositional l
 3. The program will then print out the results of the uninformed and informed searches.
 
 ## Example TestCase
-``` 4 0
-    P|(Q&(R>T))
-    P>R
-    Q>T
-    Q>(R=T)
-    R ```
+``` 
+4 0
+P|(Q&(R>T))
+P>R
+Q>T
+Q>(R=T)
+R 
+```
 OR: |
 AND: &
 NOT: !
