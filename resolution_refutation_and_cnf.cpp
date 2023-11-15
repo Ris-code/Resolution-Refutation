@@ -232,8 +232,9 @@ public:
         while (true) {
             vector<string> newClauses;
             for (int i = 0; i < KB.size(); ++i) {
-                for (int j = i + 1; j < KB.size(); ++j) {
+                for (int j = i+1; j < KB.size(); ++j) {
                     string resolvent = resolve(KB[i], KB[j]);
+                    // cout<<KB[i]<<" "<<KB[j]<<" "<<resolvent<<endl;
                     if (resolvent.empty()) {
                         // Empty resolvent means contradiction found, return true
                         cout << "[Path: " << KB[i] << ", " << KB[j] << ']'<<endl;
@@ -268,8 +269,8 @@ public:
         for (int i = 0; i < KB.size(); ++i) {
             for (int j = i + 1; j < KB.size(); ++j) {
                 string resolvent = resolve(KB[i], KB[j]);
-                cout << "[Path: " << KB[i] << ", " << KB[j] << ']'<<endl;
                 if (resolvent.empty()) {
+                    cout << "[Path: " << KB[i] << ", " << KB[j] << ']'<<endl;
                     return true;
                 } else if (!contains(newClauses, resolvent) && !contains(KB, resolvent)) {
                     newClauses.push_back(resolvent);
@@ -302,28 +303,53 @@ private:
         return find(clauses.begin(), clauses.end(), clause) != clauses.end();
     }
 
-    string resolve(const string& clause1, const string& clause2) const {
+    string resolve(const string& clause1, const string& clause2) {
         string result;
-        string clause2Copy = clause2;
+        unordered_set<string> lt;
 
-        for (char literal : clause1) {
-            if (literal != '&' && literal != '|') {
-                size_t pos = clause2Copy.find(literal);
-                if (pos == string::npos) {
-                    result += literal;
+        // Extract literals from clause1
+        int i = 0;
+        while (i < clause1.size()) {
+            char t = clause1[i];
+            if (t != '&' && t != '|') {
+                if (t == '!') {
+                    lt.insert(string(1, t) + clause1[i + 1]);
+                    i += 2;
                 } else {
-                    // Remove the resolved literal from clause2 and break the loop
-                    clause2Copy.erase(pos, 1);
-                    break;
+                    lt.insert(string(1, t));
+                    i++;
                 }
+            } else {
+                i++;
             }
         }
 
-        // Add the remaining literals from clause2 to the result
-        for (char literal : clause2Copy) {
-            if (literal != '&' && literal != '|') {
-                result += literal;
+        // Check for common literals and perform resolution
+        i = 0;
+        while (i < clause2.size()) {
+            char t = clause2[i];
+            if (t != '&' && t != '|') {
+                if (t == '!') {
+                    if (lt.find(string(1, clause2[i + 1])) != lt.end()) {
+                        // Found a common literal, remove it from the set
+                        lt.erase(string(1, clause2[i + 1]));
+                        i += 2;
+                        continue;
+                    }
+                    lt.insert(string(1, t) + clause2[i + 1]);
+                    i += 2;
+                } else {
+                    lt.insert(string(1, t));
+                    i++;
+                }
+            } else {
+                i++;
             }
+        }
+
+        // Construct the result string
+        for (const auto& literal : lt) {
+            result += literal;
         }
 
         return result;
@@ -397,14 +423,23 @@ int main(){
     
     cin >>query;
 
+    if(query.size()>2) KB.push_back("!("+query+")");
+
     vector<string> KB_cnf;
     vector<string> literals;
 
     // Convert the KB to CNF
 
     for (auto& e : KB) {
+        // cout<<'(' + e + ')'<<endl;
+        // cout<<e<<endl;
         string s = convert_to_cnf('(' + e + ')');
-        s = s.substr(1, s.length() - 2);
+        if(s[1]=='('){
+            s = s.substr(2, s.length() - 4);
+        }
+        else{
+            s = s.substr(1, s.length() - 2);
+        }
         // Separate CNF clauses and add to KB_cnf
         separateClauses(s, literals);
         for (const auto& clause : literals) {
@@ -412,15 +447,10 @@ int main(){
         }
         literals.clear();
     }
+    
+    if(query.size()==2) KB_cnf.push_back(query.substr(1,1));
+    if(query.size()==1) KB_cnf.push_back("!"+query);
 
-    // Handle the negation of the query
-    if (query[0] == '!') {
-        KB_cnf.push_back(query.substr(1, query.length() - 1));
-    } else {
-        KB_cnf.push_back('!' + query);
-    }
-    
-    
     for(int i=0; i<KB_cnf.size(); i++){
         if(KB_cnf[i][0]=='('){
             KB_cnf[i]=KB_cnf[i].substr(1,KB_cnf[i].length()-2);
@@ -447,5 +477,4 @@ int main(){
     }
 
     return 0;
-
 }
